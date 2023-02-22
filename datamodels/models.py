@@ -17,6 +17,28 @@ from const.data_types import DATA
 from utils.errorhandler import Error
 
 
+class Builder(metaclass=ABCMeta):
+
+    def __init__(self) -> None:
+        self.obj = None
+
+
+class Director(metaclass=ABCMeta):
+
+    def __init__(self) -> None:
+        self._builder = None
+
+    def set_builder(self, builder) -> None:
+        self._builder = builder
+
+    @abstractmethod
+    def construct(self) -> None:
+        pass
+
+    def get_constructed_object(self) -> object:
+        return self._builder.obj
+
+
 class DataModel(metaclass=ABCMeta):
 
     def __init__(self) -> None:
@@ -28,8 +50,12 @@ class DataModel(metaclass=ABCMeta):
 
     @datatype.setter
     def datatype(self, datatype: str) -> None:
-        if not isinstance(datatype, str) : raise TypeError(f'Data type must be str type, given {type(datatype).__class__.__name__}')
+        if not isinstance(datatype, str) : raise TypeError(Error.NOTSTR.value.format('Data', type(datatype).__class__.__name__))
         self._type = datatype
+
+    @abstractmethod
+    def update(self, **settings) -> None:
+        pass
 
     @abstractmethod
     def view(self) -> str:
@@ -63,6 +89,9 @@ class AbstractDataCacheModel(metaclass=ABCMeta):
     def get(self, datatype: str, id: int) -> DataModel:
         pass
 
+    def data(self, datatype: str) -> list:
+        return self.cache.get(datatype, [])
+
     @abstractmethod
     def json(self, datatype: str) -> dict | None:
         pass
@@ -78,35 +107,35 @@ class DataCacheModel(AbstractDataCacheModel):
 
     def add(self, data: DataModel) -> bool:
         
-        if not isinstance(data, DataModel) : raise TypeError(Error.TYPEERR.format(DataModel.__class__.__name__, type(data).__class__.__name__))
+        if not isinstance(data, DataModel) : TypeError(Error.TYPEERR.value.format(DataModel.__class__.__name__, type(data).__class__.__name__))
         
         try:
             self.cache[data.datatype.value].append(data)
             return True
         except KeyError:
-            raise Error.KEYERR.format(data.datatype.value)
+            raise KeyError(Error.DATAERROR.format(data.datatype.value))
         except AttributeError:
-            raise Error.ATTRERROR.format(data.__class__.__name__)
+            raise AttributeError(Error.ATTRERROR.format(data.__class__.__name__))
         except Exception:
             return False
 
     def delete(self, table: str, idx: int) -> bool:
 
-        if not isinstance(table, str) : raise Error.NOTSTR.format('Data type', type(table).__class__.__name__)
-        if not isinstance(idx, int) : raise Error.NOTINT.format('ID', type(idx).__class__.__name__)
+        if not isinstance(table, str) : raise TypeError(Error.NOTSTR.value.format('Data type', type(table).__class__.__name__))
+        if not isinstance(idx, int) : raise TypeError(Error.NOTINT.value.format('ID', type(idx).__class__.__name__))
 
         try:
             del self.cache[table][idx]
             return True
         except (KeyError, IndexError):
-            raise Error.KEYERR.format(table)
+            raise Error.DATAERROR.format(table)
         except Exception:
             return False
 
     def insert(self, data: DataModel, idx: int) -> bool:
 
-        if not isinstance(data, DataModel) : raise Error.NOTSTR.format('Data type', type(data).__class__.__name__)
-        if not isinstance(idx, int) : raise Error.NOTINT.format('ID', type(idx).__class__.__name__)
+        if not isinstance(data, DataModel) : raise TypeError(Error.NOTSTR.value.format('Data type', type(data).__class__.__name__))
+        if not isinstance(idx, int) : raise TypeError(Error.NOTINT.value.format('ID', type(idx).__class__.__name__))
         if not data.datatype in self.cache.keys() : return False
 
         try:
@@ -117,8 +146,8 @@ class DataCacheModel(AbstractDataCacheModel):
 
     def get(self, datatype: str, idx: int) -> DataModel | None:
 
-        if not isinstance(datatype, str) : raise Error.NOTSTR.format('Data type', type(datatype).__class__.__name__)
-        if not isinstance(idx, int) : raise Error.NOTINT.format('ID', type(idx).__class__.__name__)
+        if not isinstance(datatype, str) : raise TypeError(Error.NOTSTR.value.format('Data type', type(datatype).__class__.__name__))
+        if not isinstance(idx, int) : raise TypeError(Error.NOTINT.value.format('ID', type(idx).__class__.__name__))
         if not datatype in self.cache.keys() : return None
 
         try:
@@ -129,24 +158,28 @@ class DataCacheModel(AbstractDataCacheModel):
             return None
 
     def json(self, datatype: str) -> dict | None:
-        if not isinstance(datatype, str) : raise Error.NOTSTR.format('Data type', type(datatype).__class__.__name__)
+        if not isinstance(datatype, str) : raise TypeError(Error.NOTSTR.value.format('Data type', type(datatype).__class__.__name__))
         if not datatype in self.cache.keys() : return None
 
         try:
             return dict([(i, data.json()) for i, data in enumerate(self.cache[datatype])])
         except AttributeError:
-            raise Error.ATTRERROR(datatype)
+            raise AttributeError(Error.ATTRERROR(datatype))
         except TypeError:
             return None
 
-    def view(self, datatype: str) -> str | None:
+    def view(self, datatype: str) -> list | None:
         
-        if not isinstance(datatype, str) : raise Error.NOTSTR.format('Data type', type(datatype).__class__.__name__)
+        if not isinstance(datatype, str) : raise TypeError(Error.NOTSTR.value.format('Data type', type(datatype).__class__.__name__))
         if not datatype in self.cache.keys() : return None
 
         try:
-            return dict([(i, data.view()) for i, data in enumerate(self.cache[datatype])])
+            return [data.view() for data in self.cache[datatype]]
         except AttributeError:
-            raise Error.ATTRERROR(datatype)
+            raise AttributeError(Error.ATTRERROR(datatype))
         except TypeError:
             return None
+
+    def __str__(self):
+        for data in self.cache.values():
+            return data.__str__()

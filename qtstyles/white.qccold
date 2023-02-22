@@ -1,0 +1,71 @@
+/* Main style */
+QMainWindow {
+    background-color: #EFEFF0;
+    icon: computer-icon;
+}
+#empty {
+    background-color: #F8F8FF;
+    border-style: none;
+}
+
+/* QTabWidget */
+QTabWidget::pane {
+    border: 2px solid #5C5D6D;
+    background: #ECEEFF;
+    position: absolute;
+    top: -0.1em;
+}
+QTabWidget::tab-bar {
+    left: 5px;
+}
+QTabBar::tab {
+    font-family: Titillium;
+    font-size: 16px;
+    color: #454655;
+    background: #EFEFF0;
+    border-bottom: 2px solid #5C5D6D;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    min-width = 8ex;
+    padding: 8px;
+}
+QTabBar::tab:selected {
+    font: bold;
+    color: #EFEFF0;
+    background: #5C5D6D;
+}
+
+/* QListView */
+QListView {
+    background: #454655;
+    font-family: Titillium;
+    font-size: 16px;
+    color: #F8F8FF;
+    show-decoration-selected: 1;
+    border: 0px solid #BABABB;
+    padding: 0;
+}
+QListView::item {
+    background-position: center center;
+}
+QListView::item:selected:active {
+    background: #F8F8FF;
+    color: #454655;
+    border: 1px solid #454655;
+    border-radius: 2px;
+}
+QListView::item:selected:!active {
+    background: #A9AABC;
+    color: #454655;
+}
+
+/* QEditor */
+QDialog#editor {
+    background-color: #EFEFF0;
+}
+QLineEdit#editor {
+    background: #5C5D6D;
+    font-family: Titillium;
+    font-size: 16px;
+    color: #EFEFF0;
+}

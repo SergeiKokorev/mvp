@@ -26,7 +26,7 @@ class Expression(DataModel):
         return self.description
 
     def view(self) -> str:
-        return f'{self.variable} = {self.expression}'
+        return f'{self.variable} = {self.expression}\n'
 
     def json(self) -> dict:
         return {'type': self.datatype.value, 'variable': self.variable, 
@@ -34,13 +34,20 @@ class Expression(DataModel):
                 'description': self.description,
                 'checked': self.checked}
 
+    def update(self, **settings) -> None:
+        self.variable = settings.get('variable', self.variable)
+        self.expression = settings.get('expression', self.expression)
+        self.description = settings.get('description', self.description)
+        self.checked = settings.get('checked', self.checked)
+        return super().update(**settings)
+
     def cse(self) -> str:
-        return f'! ${self.variable} = {self.expression} #{self.description}'
+        return f'! ${self.variable} = {self.expression} #{self.description}\n'
 
     def __str__(self) -> str:
         return self.view()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.cse()
 
 
@@ -49,47 +56,40 @@ class Performance(DataModel):
     def __init__(self, curve: str, files: list, inlet: str, outlet: str, description: str='') -> None:
         self.curve = curve
         self.files = files
-        self.inlet = self.inlet
+        self.inlet = inlet
         self.outlet = outlet
         self.description = description
         super().__init__()
-        self._type = DATA.EXPRESSION
+        self._type = DATA.PERFORMANCE
+
+    @property
+    def tooltip(self):
+        return self.description
+
+    def update(self, **settings) -> None:
+        self.curve = settings.get('curve', self.curve)
+        self.files = settings.get('files', self.files)
+        self.inlet = settings.get('inlet', self.inlet)
+        self.outlet = settings.get('outlet', self.outlet)
+        self.description = settings.get('description', self.description)
+        return super().update(**settings)
+
+    def view(self) -> list:
+        return f'{self.curve}: inlet={self.inlet}, outlet{self.outlet} ({self.description})'
+
+    def cse(self):
+        return f'! my @files = ({self.files}[1:-1]);\n! for my $f (@files) {{}};\n'
 
     def view(self) -> str:
-        return f'{self.curve} -> files: {[os.path.split(f)[1] for f in self.files]}'
+        return f'{self.curve} -> files: {[os.path.split(f)[1] for f in self.files]}(IN:{self.inlet}, OUT:{self.outlet})\n'
 
     def json(self) -> dict:
         return {'type': self.datatype.value, 'curve': self.curve,
                 'inlet': self.inlet, 'outlet': self.outlet,
                 'files': self.files, 'description': self.description}
 
+    def __str__(self) -> str:
+        return self.view()
 
-class Table(DataCacheModel):
-
-    def __init__(self):
-        self.table = None
-
-    def delete(self, idx: int) -> bool:
-        return super().delete(self.table, idx)
-
-    def get(self, idx: int) -> DataModel | None:
-        return super().get(self.table, idx)
-
-    def json(self) -> dict | None:
-        return super().json(self.table)
-
-    def view(self) -> str | None:
-        return super().view(self.table)
-
-
-class ExpressionTable(Table):
-
-    def __init__(self):
-        super().__init__()
-        self.table = DATA.EXPRESSION.value
-
-class PerformanceTable(Table):
-
-    def __init__(self):
-        super().__init__()
-        self.table = DATA.PERFORMANCE.value
+    def __repr__(self) -> str:
+        return self.cse()
