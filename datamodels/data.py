@@ -34,12 +34,18 @@ class Expression(DataModel):
                 'description': self.description,
                 'checked': self.checked}
 
+    def data(self) -> dict:
+        return self.json()
+
     def update(self, **settings) -> None:
         self.variable = settings.get('variable', self.variable)
         self.expression = settings.get('expression', self.expression)
         self.description = settings.get('description', self.description)
         self.checked = settings.get('checked', self.checked)
         return super().update(**settings)
+
+    def info(self) -> str:
+        return f'{self.variable} = {self.expression} ({self.description})'
 
     def cse(self) -> str:
         return f'! ${self.variable} = {self.expression} #{self.description}\n'
@@ -75,13 +81,13 @@ class Performance(DataModel):
         return super().update(**settings)
 
     def view(self) -> list:
-        return f'{self.curve}: inlet={self.inlet}, outlet{self.outlet} ({self.description})'
+        return f'{self.curve}'
+
+    def info(self) -> str:
+        return f'{self.curve}:\t{self.files}\tInlet: {self.inlet};\tOutlet: {self.outlet}'
 
     def cse(self):
         return f'! my @files = ({self.files}[1:-1]);\n! for my $f (@files) {{}};\n'
-
-    def view(self) -> str:
-        return f'{self.curve} -> files: {[os.path.split(f)[1] for f in self.files]}(IN:{self.inlet}, OUT:{self.outlet})\n'
 
     def json(self) -> dict:
         return {'type': self.datatype.value, 'curve': self.curve,

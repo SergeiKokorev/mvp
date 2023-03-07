@@ -8,6 +8,10 @@ QMainWindow {
     background-color: #FAF8FF;
 }
 
+#info {
+    
+}
+
 /* ListView */
 QListView {
     background-color: #474554;

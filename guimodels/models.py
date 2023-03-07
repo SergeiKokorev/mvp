@@ -71,6 +71,11 @@ class ListModel(QAbstractListModel):
         if role == Qt.ItemDataRole.EditRole:
             self.editor.show()
 
+    def getData(self, index: Union[QModelIndex, QPersistentModelIndex]) -> str:
+        if not index.isValid() : return None
+        if not 0 <= index.row() <= len(self._data.data()) : return None
+        return self._data.get(index.row())
+
     def flags(self, index: Union[QModelIndex, QPersistentModelIndex]) -> Qt.ItemFlag:
         
         if not index.isValid() : return Qt.ItemFlag.ItemIsEnabled

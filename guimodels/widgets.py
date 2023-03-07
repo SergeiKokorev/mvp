@@ -13,7 +13,7 @@ from typing import Optional, Sequence, Union, Any
 
 from PySide6.QtWidgets import (
     QWidget, QTabWidget, QListView,
-    QAbstractScrollArea
+    QAbstractScrollArea, QLabel
 )
 from PySide6.QtCore import (
     QModelIndex, QPersistentModelIndex, QSize
@@ -54,3 +54,9 @@ class ListView(QListView, AbstractWidget):
 
     def update(self, index: Union[QModelIndex, QPersistentModelIndex]) -> None:
         return super().update(index)
+
+
+class Label(QLabel):
+
+    def __init__(self, parent: Optional[QWidget]=None, **settings):
+        super(Label, self).__init__(parent)

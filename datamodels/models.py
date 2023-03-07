@@ -62,6 +62,10 @@ class DataModel(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    def info(self) -> str:
+        pass
+
+    @abstractmethod
     def json(self) -> dict:
         pass
 
